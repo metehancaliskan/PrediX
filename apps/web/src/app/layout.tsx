@@ -1,4 +1,5 @@
 import '../styles/globals.css';
+import '@rainbow-me/rainbowkit/styles.css';
 import type { ReactNode } from 'react';
 import { WagmiProviders } from '../providers/WagmiProviders';
 
