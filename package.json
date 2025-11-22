@@ -1,0 +1,17 @@
+{
+  "name": "predix",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm --workspace @predix/web run dev",
+    "build": "npm --workspace @predix/web run build",
+    "start": "npm --workspace @predix/web run start"
+  },
+  "dependencies": {
+    "@react-spring/web": "^9.7.5",
+    "@use-gesture/react": "^10.3.1"
+  }
+}
