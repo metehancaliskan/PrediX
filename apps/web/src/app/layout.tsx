@@ -1,5 +1,6 @@
 import '../styles/globals.css';
 import type { ReactNode } from 'react';
+import { WagmiProviders } from '../providers/WagmiProviders';
 
 export const metadata = {
   title: 'PrediX',
@@ -10,7 +11,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="tr">
       <body>
-        {children}
+        <WagmiProviders>
+          {children}
+        </WagmiProviders>
       </body>
     </html>
   );

@@ -13,6 +13,7 @@ type Prediction = {
 
 export default function SwipeDeck() {
   const [items, setItems] = useState<Prediction[]>([]);
+  const [flash, setFlash] = useState<null | 'WIN' | 'LOSE'>(null);
 
   useEffect(() => {
     (async () => {
@@ -34,14 +35,19 @@ export default function SwipeDeck() {
   const onSwipe = (direction: string, id: string) => {
     const pick = direction === 'right' ? 'WIN' : direction === 'left' ? 'LOSE' : null;
     if (!pick) return;
-    // UI-only: burada sadece console.log ile gösteriyoruz
-    // Sonraki aşamada kontrata bet yazımı entegre edilecek.
     // eslint-disable-next-line no-console
     console.log('picked', { id, pick });
+    setFlash(pick);
+    setTimeout(() => setFlash(null), 900);
   };
 
   return (
     <div className="deck">
+      {flash && (
+        <div className={`resultFlash ${flash === 'WIN' ? 'win' : 'lose'}`}>
+          {flash}
+        </div>
+      )}
       {cards.map((p, idx) => (
         <TinderCard
           className="swipe"
@@ -51,14 +57,17 @@ export default function SwipeDeck() {
         >
           <article className="card" style={{ zIndex: 100 - idx }}>
             <div className="cardHeader">
-              <span className="chip">Prediction</span>
+              <span className="chip">Market</span>
               <span className="time">
                 Ends: {new Date(p.endsAt * 1000).toLocaleString()}
               </span>
             </div>
             <h3 className="question">{p.title}</h3>
             <div className="spacer" />
-            <div className="hint">Swipe Right = Win, Left = Lose</div>
+            <div className="choiceRow">
+              <span className="badge lose">← Lose</span>
+              <span className="badge win">Win →</span>
+            </div>
           </article>
         </TinderCard>
       ))}
