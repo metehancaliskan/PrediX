@@ -1,4 +1,4 @@
-const { ethers } = require('hardhat');
+import { ethers } from "hardhat";
 
 async function main() {
   const Factory = await ethers.getContractFactory('PredictionMarketFactory');
@@ -11,17 +11,16 @@ async function main() {
   const tx = await factory.createMarket(description);
   const receipt = await tx.wait();
 
-  // MarketCreated event'ini al
   const parsed = receipt.logs
     .map((log) => {
       try { return factory.interface.parseLog(log); } catch { return null; }
     })
     .filter(Boolean);
 
-  const created = parsed.find((e) => e.name === 'MarketCreated');
+  const created = parsed.find((e: any) => e.name === 'MarketCreated');
   if (!created) throw new Error('MarketCreated event not found');
 
-  const marketAddr = created.args.marketAddress;
+  const marketAddr = created.args.marketAddress as string;
   console.log('Market deployed:', marketAddr);
 
   const market = await ethers.getContractAt('PredictionMarket', marketAddr);

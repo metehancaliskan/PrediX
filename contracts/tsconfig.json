@@ -5,14 +5,7 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "resolveJsonModule": true,
-    "types": ["node", "mocha"]
+    "types": ["hardhat", "node", "mocha"]
   },
-  "include": [
-    "./scripts",
-    "./test",
-    "./hardhat.config.ts",
-    "./contracts"
-  ]
+  "include": ["./scripts", "./test", "./hardhat.config.ts", "./contracts"]
 }
-
-
