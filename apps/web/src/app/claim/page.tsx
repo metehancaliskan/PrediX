@@ -146,13 +146,27 @@ export default function ClaimPage() {
 
   const withdraw = async (addr: `0x${string}`) => {
     try {
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: addr,
         abi: PredictionMarketAbi as any,
         functionName: 'withdrawWinnings',
         args: []
       });
-      // Refresh positions after withdraw to reflect claim status (if you mark them later)
+
+      if (publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash: txHash });
+      }
+
+      // Mark claimed in Supabase for this wallet and market
+      if (address) {
+        await fetch('/api/positions/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_address: address, market_address: addr })
+        });
+      }
+
+      // Refresh positions after withdraw
       if (address) {
         const pRes = await fetch(`/api/positions?user=${address}&limit=200`, { cache: 'no-store' });
         const pJson = await pRes.json();
