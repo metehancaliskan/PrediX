@@ -1,6 +1,6 @@
 'use client';
 
-import TopBar from '../../components/TopBar';
+import Header from '../../components/Header';
 import { useAccount, useWriteContract } from 'wagmi';
 import { useEffect, useMemo, useState } from 'react';
 import PredictionMarketAbi from '../../abi/PredictionMarket.json';
@@ -110,52 +110,54 @@ export default function ClaimPage() {
   };
 
   return (
-    <main className="container">
-      <TopBar />
-      <h2 style={{ margin: '12px 0 16px 0' }}>Claim your bets</h2>
-      {(!address) && <p>Please connect your wallet.</p>}
-      {address && claimable.length === 0 && open.length === 0 && <p>No positions found.</p>}
-      {claimable.length > 0 && <h3 style={{ margin: '8px 0' }}>Claimable</h3>}
-      <div style={{ display: 'grid', gap: 12, marginBottom: 16 }}>
-        {claimable.map((it) => (
-          <div key={it.addr} className="panel" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {it.image ? (
-              <div className="imgWrap" style={{ width: 120 }}>
-                <img src={it.image} alt="market" />
+    <>
+      <main className="container">
+        <Header collapsed={false} onToggle={() => {}} showToggle={false} />
+        <h2 style={{ margin: '12px 0 16px 0' }}>Claim your bets</h2>
+        {(!address) && <p>Please connect your wallet.</p>}
+        {address && claimable.length === 0 && open.length === 0 && <p>No positions found.</p>}
+        {claimable.length > 0 && <h3 style={{ margin: '8px 0' }}>Claimable</h3>}
+        <div style={{ display: 'grid', gap: 12, marginBottom: 16 }}>
+          {claimable.map((it) => (
+            <div key={it.addr} className="panel" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {it.image ? (
+                <div className="imgWrap" style={{ width: 120 }}>
+                  <img src={it.image} alt="market" />
+                </div>
+              ) : null}
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600 }}>{it.description ?? it.addr}</div>
+                <div className="addr" style={{ marginTop: 4 }}>{it.addr.slice(0, 10)}…{it.addr.slice(-6)}</div>
               </div>
-            ) : null}
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600 }}>{it.description ?? it.addr}</div>
-              <div className="addr" style={{ marginTop: 4 }}>{it.addr.slice(0, 10)}…{it.addr.slice(-6)}</div>
+              <button
+                className="connect"
+                onClick={() => withdraw(it.addr)}
+                disabled={isPending}
+              >
+                {isPending ? 'Withdrawing...' : 'Withdraw'}
+              </button>
             </div>
-            <button
-              className="connect"
-              onClick={() => withdraw(it.addr)}
-              disabled={isPending}
-            >
-              {isPending ? 'Withdrawing...' : 'Withdraw'}
-            </button>
-          </div>
-        ))}
-      </div>
-      {open.length > 0 && <h3 style={{ margin: '8px 0' }}>Open Positions (awaiting settlement)</h3>}
-      <div style={{ display: 'grid', gap: 12 }}>
-        {open.map((it) => (
-          <div key={it.addr} className="panel" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {it.image ? (
-              <div className="imgWrap" style={{ width: 120 }}>
-                <img src={it.image} alt="market" />
+          ))}
+        </div>
+        {open.length > 0 && <h3 style={{ margin: '8px 0' }}>Open Positions (awaiting settlement)</h3>}
+        <div style={{ display: 'grid', gap: 12 }}>
+          {open.map((it) => (
+            <div key={it.addr} className="panel" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              {it.image ? (
+                <div className="imgWrap" style={{ width: 120 }}>
+                  <img src={it.image} alt="market" />
+                </div>
+              ) : null}
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600 }}>{it.description ?? it.addr}</div>
+                <div className="addr" style={{ marginTop: 4 }}>{it.addr.slice(0, 10)}…{it.addr.slice(-6)}</div>
               </div>
-            ) : null}
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 600 }}>{it.description ?? it.addr}</div>
-              <div className="addr" style={{ marginTop: 4 }}>{it.addr.slice(0, 10)}…{it.addr.slice(-6)}</div>
+              <span className="badge skip">Pending</span>
             </div>
-            <span className="badge skip">Pending</span>
-          </div>
-        ))}
-      </div>
-    </main>
+          ))}
+        </div>
+      </main>
+    </>
   );
 }
 

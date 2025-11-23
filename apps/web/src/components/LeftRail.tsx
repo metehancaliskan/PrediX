@@ -2,8 +2,9 @@
 
 import WalletConnect from './WalletConnect';
 import { useAccount, useBalance } from 'wagmi';
+import BetSettings from './BetSettings';
 
-export default function LeftRail() {
+export default function LeftRail({ amount, onChange }: { amount: string; onChange: (v: string) => void }) {
   const { address } = useAccount();
   const { data: bal, isLoading } = useBalance({
     address: address as `0x${string}` | undefined,
@@ -12,8 +13,8 @@ export default function LeftRail() {
 
   return (
     <aside className="leftPanel">
-      <div className="panel" style={{ marginBottom: 12 }}>
-        <div className="panelTitle">Wallet</div>
+      <div className="leftPlain">
+        <div className="panelTitle" style={{ marginBottom: 8 }}>Wallet</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <WalletConnect />
         </div>
@@ -33,15 +34,10 @@ export default function LeftRail() {
             </div>
           </div>
         ) : null}
-      </div>
-      <div className="panel">
-        <div className="panelTitle">Filters</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          <span className="badge" style={{ cursor: 'default' }}>All</span>
-          <span className="badge" style={{ cursor: 'default' }}>Football</span>
-          <span className="badge" style={{ cursor: 'default' }}>Crypto</span>
-          <span className="badge" style={{ cursor: 'default' }}>Esports</span>
-        </div>
+
+        <div className="divider" />
+
+        <BetSettings amount={amount} onChange={onChange} bare />
       </div>
     </aside>
   );

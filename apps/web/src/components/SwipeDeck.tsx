@@ -58,29 +58,66 @@ export default function SwipeDeck({ amount }: { amount: string }) {
     setFlipped(false);
   }, [active]);
 
-  const ensureInsights = async (addr?: string) => {
-    if (!addr) return;
-    if (insightsCache[addr]) return;
+  const getMockInsights = (title?: string) => {
+    const t = (title || '').toLowerCase();
+    if (!t) return null;
+    if (t.includes('milan') && t.includes('arsenal')) {
+      return {
+        last5: ['2-1 (MIL-NAP)', '1-1 (MIL-INT)', '0-2 (ARS-MCI)', '3-0 (ARS-BOU)', '2-2 (MIL-ARS)'],
+        injuries: ['Leão (thigh)', 'Saka (knock)']
+      };
+    }
+    if ((t.includes('galatasaray') || t.includes('gs')) && (t.includes('fener') || t.includes('fb'))) {
+      return {
+        last5: ['2-2 (GS-FB)', '3-1 (GS-KON)', '0-0 (FB-BJK)', '1-2 (GS-TS)', '4-0 (FB-ANT)'],
+        injuries: ['Icardi (ankle)', 'Fred (hamstring)']
+      };
+    }
+    return { last5: [], injuries: [] };
+  };
+
+  const ensureInsights = async (addr?: string, title?: string) => {
+    const key = addr || (title || '');
+    if (!key) return;
+    if (insightsCache[key]) return;
     try {
-      const r = await fetch(`/api/insights?addr=${addr}`, { cache: 'no-store' });
-      const j = await r.json();
+      let last5: string[] = [];
+      let injuries: string[] = [];
+      let home: string | null = null;
+      let away: string | null = null;
+      if (addr) {
+        const r = await fetch(`/api/insights?addr=${addr}`, { cache: 'no-store' });
+        const j = await r.json();
+        last5 = Array.isArray(j.last5) ? j.last5 : [];
+        injuries = Array.isArray(j.injuries) ? j.injuries : [];
+        home = j.home_team ?? null;
+        away = j.away_team ?? null;
+      }
+      if ((!last5?.length && !injuries?.length) || !addr) {
+        const mock = getMockInsights(title);
+        if (mock) {
+          last5 = mock.last5;
+          injuries = mock.injuries;
+        }
+      }
       setInsightsCache((prev) => ({
         ...prev,
-        [addr]: {
-          last5: Array.isArray(j.last5) ? j.last5 : [],
-          injuries: Array.isArray(j.injuries) ? j.injuries : [],
-          home: j.home_team ?? null,
-          away: j.away_team ?? null
-        }
+        [key]: { last5, injuries, home, away }
       }));
     } catch {
-      // ignore
+      const mock = getMockInsights(title);
+      if (mock) {
+        setInsightsCache((prev) => ({
+          ...prev,
+          [key]: { last5: mock.last5, injuries: mock.injuries }
+        }));
+      }
     }
   };
 
   const onCardClick = async (addr?: string) => {
     if (!flipped) {
-      await ensureInsights(addr);
+      await ensureInsights(addr, current?.card?.question);
     }
     setFlipped((v) => !v);
   };
@@ -91,7 +128,11 @@ export default function SwipeDeck({ amount }: { amount: string }) {
       setActive((i) => (i + 1) % items.length);
       return;
     }
-    if (direction === 'down') { return; } // disable down swipe per UX
+    if (direction === 'down') {
+      // previous card
+      setActive((i) => (i - 1 + items.length) % items.length);
+      return;
+    }
     const pick = direction === 'right' ? 'WIN' : direction === 'left' ? 'LOSE' : null;
     if (!pick) return;
 
@@ -147,7 +188,7 @@ export default function SwipeDeck({ amount }: { amount: string }) {
         <TinderCard
           className="swipe"
           onSwipe={(d) => onSwipe(d, current.card)}
-          preventSwipe={['down']}
+          preventSwipe={[]}
           key={`${current.card.id}-${current.index}-${active}`}
         >
           <article className="card" style={{ zIndex: 100 }} onClick={() => onCardClick(current.card.marketAddress)}>
@@ -164,39 +205,38 @@ export default function SwipeDeck({ amount }: { amount: string }) {
                   <span className="time">{current.card.endsAt ? `Ends: ${new Date(current.card.endsAt * 1000).toLocaleString()}` : ''}</span>
                 </div>
                 <h3 className="question">{current.card.question}</h3>
-                {current.card.marketAddress ? (
-                  <div className="addr">Addr: {current.card.marketAddress.slice(0, 6)}…{current.card.marketAddress.slice(-4)}</div>
-                ) : null}
                 <div className="spacer" />
                 <div className="choiceRow">
                   <span className="badge lose">← Lose</span>
-                  <span className="badge skip">↑ Skip</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span className="badge skip">↑ Skip</span>
+                    <span className="badge skip">↓ Previous</span>
+                  </div>
                   <span className="badge win">Win →</span>
                 </div>
               </div>
               {/* Back face */}
               <div className="cardFace back">
-                <div className="subtle">Tap to flip back</div>
-                <h4 style={{ margin: '4px 0 8px 0' }}>
-                  Insights {insightsCache[current.card.marketAddress ?? '']?.home ? `• ${insightsCache[current.card.marketAddress ?? '']?.home} vs ${insightsCache[current.card.marketAddress ?? '']?.away}` : ''}
-                </h4>
+                <h4 style={{ margin: '4px 0 8px 0' }}>Insights</h4>
                 <div className="insightsGrid">
                   <div>
                     <div className="miniTitle">Last 5</div>
                     <ul className="miniList">
-                      {(insightsCache[current.card.marketAddress ?? '']?.last5 ?? []).slice(0, 5).map((s, i) => (
-                        <li key={i}>{s}</li>
-                      ))}
-                      {((insightsCache[current.card.marketAddress ?? '']?.last5 ?? []).length === 0) && <li>No data</li>}
+                      {(insightsCache[(current.card.marketAddress ?? current.card.question)]?.last5 ?? []).length
+                        ? (insightsCache[(current.card.marketAddress ?? current.card.question)]!.last5).slice(0, 5).map((s, i) => (
+                            <li key={i}>{s}</li>
+                          ))
+                        : <li>No data</li>}
                     </ul>
                   </div>
                   <div>
                     <div className="miniTitle">Injuries</div>
                     <ul className="miniList">
-                      {(insightsCache[current.card.marketAddress ?? '']?.injuries ?? []).slice(0, 5).map((s, i) => (
-                        <li key={i}>{s}</li>
-                      ))}
-                      {((insightsCache[current.card.marketAddress ?? '']?.injuries ?? []).length === 0) && <li>No data</li>}
+                      {(insightsCache[(current.card.marketAddress ?? current.card.question)]?.injuries ?? []).length
+                        ? (insightsCache[(current.card.marketAddress ?? current.card.question)]!.injuries).slice(0, 5).map((s, i) => (
+                            <li key={i}>{s}</li>
+                          ))
+                        : <li>No data</li>}
                     </ul>
                   </div>
                 </div>

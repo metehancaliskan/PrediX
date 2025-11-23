@@ -3,10 +3,7 @@ import Link from 'next/link';
 export default function TopBar() {
   return (
     <header className="topBar" style={{ position: 'relative' }}>
-      <div className="brand">
-        <span className="logo">🎰</span>
-        <span>PrediX</span>
-      </div>
+      <div className="brand" />
       <nav
         className="nav"
         style={{
