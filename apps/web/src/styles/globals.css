@@ -138,6 +138,26 @@ body {
   height: 520px;
 }
 
+/* Image container: show full image without cropping */
+.imgWrap {
+  width: 100%;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  display: grid;
+  place-items: center;
+  background: #0b0f14;
+}
+.imgWrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
 /* Swipe sonrası parlayan WIN/LOSE overlay */
 .resultFlash {
   position: absolute;

@@ -15,6 +15,7 @@ type MarketCard = {
 export default function SwipeDeck({ amount }: { amount: string }) {
   const [items, setItems] = useState<MarketCard[]>([]);
   const [flash, setFlash] = useState<null | 'WIN' | 'LOSE'>(null);
+  const [active, setActive] = useState<number>(0); // index of current card
   const { address } = useAccount();
 
   useEffect(() => {
@@ -30,23 +31,33 @@ export default function SwipeDeck({ amount }: { amount: string }) {
           endsAt: m.created_at ? Math.floor(new Date(m.created_at).getTime() / 1000) + 86400 : undefined
         }));
         setItems(cards);
+        setActive(0);
       } catch {
         setItems([]);
+        setActive(0);
       }
     })();
   }, []);
 
-  const cards = useMemo(() => items.slice(0, 10), [items]);
+  const current = useMemo(() => {
+    if (items.length === 0) return null;
+    const i = ((active % items.length) + items.length) % items.length;
+    return { card: items[i], index: i } as { card: MarketCard; index: number };
+  }, [items, active]);
 
-  const onSwipe = async (direction: string, idx: number) => {
-    if (direction === 'up') {
-      // Skip: do nothing other than moving to next card
+  const onSwipe = async (direction: string, card: MarketCard) => {
+    if (!current || items.length === 0) return;
+    if (direction === 'up') { // pass forward
+      setActive((i) => (i + 1) % items.length);
+      return;
+    }
+    if (direction === 'down') { // pass backward
+      setActive((i) => (i - 1 + items.length) % items.length);
       return;
     }
     const pick = direction === 'right' ? 'WIN' : direction === 'left' ? 'LOSE' : null;
     if (!pick) return;
 
-    const card = cards[idx];
     setFlash(pick);
     setTimeout(() => setFlash(null), 900);
 
@@ -68,6 +79,8 @@ export default function SwipeDeck({ amount }: { amount: string }) {
     } catch (e) {
       console.error('positions insert failed', e);
     }
+    // Move to next card after a bet
+    setActive((i) => (i + 1) % items.length);
   };
 
   return (
@@ -77,28 +90,28 @@ export default function SwipeDeck({ amount }: { amount: string }) {
           {flash}
         </div>
       )}
-      {cards.map((p, idx) => (
+      {current && (
         <TinderCard
           className="swipe"
-          onSwipe={(d) => onSwipe(d, idx)}
-          preventSwipe={['down']}
-          key={p.id}
+          onSwipe={(d) => onSwipe(d, current.card)}
+          preventSwipe={[]}
+          key={`${current.card.id}-${current.index}-${active}`}
         >
-          <article className="card" style={{ zIndex: 100 - idx }}>
-            {p.imageUrl ? (
+          <article className="card" style={{ zIndex: 100 }}>
+            {current.card.imageUrl ? (
               <div className="imgWrap">
-                <img src={p.imageUrl} alt="prediction" />
+                <img src={current.card.imageUrl} alt="prediction" />
               </div>
             ) : null}
 
             <div className="cardHeader">
               <span className="chip">Market</span>
-              <span className="time">{p.endsAt ? `Ends: ${new Date(p.endsAt * 1000).toLocaleString()}` : ''}</span>
+              <span className="time">{current.card.endsAt ? `Ends: ${new Date(current.card.endsAt * 1000).toLocaleString()}` : ''}</span>
             </div>
 
-            <h3 className="question">{p.question}</h3>
-            {p.marketAddress ? (
-              <div className="addr">Addr: {p.marketAddress.slice(0, 6)}…{p.marketAddress.slice(-4)}</div>
+            <h3 className="question">{current.card.question}</h3>
+            {current.card.marketAddress ? (
+              <div className="addr">Addr: {current.card.marketAddress.slice(0, 6)}…{current.card.marketAddress.slice(-4)}</div>
             ) : null}
 
             <div className="spacer" />
@@ -109,7 +122,7 @@ export default function SwipeDeck({ amount }: { amount: string }) {
             </div>
           </article>
         </TinderCard>
-      ))}
+      )}
     </div>
   );
 }

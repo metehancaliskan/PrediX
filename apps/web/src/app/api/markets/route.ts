@@ -6,6 +6,7 @@ type MarketRow = {
   market_address: string | null;
   description: string | null;
   image_url: string | null;
+  is_settled?: boolean | null;
 };
 
 export async function GET(request: Request) {
@@ -21,11 +22,15 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const limit = searchParams.get('limit') ?? '50';
+  const includeSettled = searchParams.get('includeSettled') === 'true';
 
   const url = new URL(`${SUPABASE_URL}/rest/v1/prediction_markets`);
-  url.searchParams.set('select', 'id,created_at,market_address,description,image_url');
+  url.searchParams.set('select', 'id,created_at,market_address,description,image_url,is_settled');
   url.searchParams.set('order', 'created_at.desc');
   url.searchParams.set('limit', limit);
+  if (!includeSettled) {
+    url.searchParams.set('is_settled', 'eq.false');
+  }
 
   const r = await fetch(url.toString(), {
     headers: {
