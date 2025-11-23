@@ -1,9 +1,10 @@
 'use client';
 
 import Header from '../../components/Header';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, usePublicClient, useWriteContract } from 'wagmi';
 import { useEffect, useMemo, useState } from 'react';
 import PredictionMarketAbi from '../../abi/PredictionMarket.json';
+import { formatEther } from 'viem';
 
 type PositionRow = {
   id: string;
@@ -25,9 +26,12 @@ type MarketRow = {
 
 export default function ClaimPage() {
   const { address } = useAccount();
+  const publicClient = usePublicClient();
   const { writeContractAsync, isPending } = useWriteContract();
   const [positions, setPositions] = useState<PositionRow[]>([]);
   const [markets, setMarkets] = useState<MarketRow[]>([]);
+  const [payouts, setPayouts] = useState<Record<string, string>>({}); // addr -> formatted amount
+  const [payoutsWei, setPayoutsWei] = useState<Record<string, bigint>>({}); // addr -> raw amount
 
   useEffect(() => {
     if (!address) return;
@@ -89,6 +93,57 @@ export default function ClaimPage() {
     return { claimable: claimableList, open: openList };
   }, [positions, marketMeta]);
 
+  // Load on-chain claimable amount per market
+  useEffect(() => {
+    if (!address || !publicClient) return;
+    if (claimable.length === 0) { setPayouts({}); return; }
+
+    (async () => {
+      const next: Record<string, string> = {};
+      const nextWei: Record<string, bigint> = {};
+      for (const it of claimable) {
+        const addr = it.addr;
+        try {
+          const [isSettled, outcome, totalWin, totalLose, userWin, userLose, balance] = await Promise.all([
+            publicClient.readContract({ address: addr, abi: PredictionMarketAbi as any, functionName: 'isSettled', args: [] }) as Promise<boolean>,
+            publicClient.readContract({ address: addr, abi: PredictionMarketAbi as any, functionName: 'marketOutcome', args: [] }) as Promise<number>,
+            publicClient.readContract({ address: addr, abi: PredictionMarketAbi as any, functionName: 'totalWinBets', args: [] }) as Promise<bigint>,
+            publicClient.readContract({ address: addr, abi: PredictionMarketAbi as any, functionName: 'totalLoseBets', args: [] }) as Promise<bigint>,
+            publicClient.readContract({ address: addr, abi: PredictionMarketAbi as any, functionName: 'winBets', args: [address] }) as Promise<bigint>,
+            publicClient.readContract({ address: addr, abi: PredictionMarketAbi as any, functionName: 'loseBets', args: [address] }) as Promise<bigint>,
+            publicClient.getBalance({ address: addr })
+          ]);
+
+          if (!isSettled) continue;
+          let payout: bigint = 0n;
+          // Outcome enum: 0=Undecided, 1=Win, 2=Lose, 3=InvalidOutcome
+          if (outcome === 1 && userWin > 0n && totalWin > 0n) {
+            payout = (balance * userWin) / totalWin;
+          } else if (outcome === 2 && userLose > 0n && totalLose > 0n) {
+            payout = (balance * userLose) / totalLose;
+          } else if (outcome === 3) {
+            payout = userWin + userLose;
+          }
+          if (payout > 0n) {
+            next[addr] = `${Number(formatEther(payout)).toLocaleString(undefined, { maximumFractionDigits: 6 })} CHZ`;
+            nextWei[addr] = payout;
+          }
+        } catch {
+          // ignore per-market errors
+        }
+      }
+      setPayouts(next);
+      setPayoutsWei(nextWei);
+    })();
+  }, [address, publicClient, claimable]);
+
+  const totalClaimableFmt = useMemo(() => {
+    let sum: bigint = 0n;
+    for (const v of Object.values(payoutsWei)) sum += v;
+    if (sum <= 0n) return null;
+    return `${Number(formatEther(sum)).toLocaleString(undefined, { maximumFractionDigits: 6 })} CHZ`;
+  }, [payoutsWei]);
+
   const withdraw = async (addr: `0x${string}`) => {
     try {
       await writeContractAsync({
@@ -114,6 +169,11 @@ export default function ClaimPage() {
       <main className="container">
         <Header collapsed={false} onToggle={() => {}} showToggle={false} />
         <h2 style={{ margin: '12px 0 16px 0' }}>Claim your bets</h2>
+        {totalClaimableFmt && (
+          <div className="panel" style={{ marginBottom: 12, fontWeight: 700 }}>
+            Total claimable: {totalClaimableFmt}
+          </div>
+        )}
         {(!address) && <p>Please connect your wallet.</p>}
         {address && claimable.length === 0 && open.length === 0 && <p>No positions found.</p>}
         {claimable.length > 0 && <h3 style={{ margin: '8px 0' }}>Claimable</h3>}
@@ -127,7 +187,9 @@ export default function ClaimPage() {
               ) : null}
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600 }}>{it.description ?? it.addr}</div>
-                <div className="addr" style={{ marginTop: 4 }}>{it.addr.slice(0, 10)}…{it.addr.slice(-6)}</div>
+                {payouts[it.addr] && (
+                  <div className="label" style={{ marginTop: 6, color: 'var(--gold)' }}>Claimable: {payouts[it.addr]}</div>
+                )}
               </div>
               <button
                 className="connect"
@@ -150,7 +212,6 @@ export default function ClaimPage() {
               ) : null}
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600 }}>{it.description ?? it.addr}</div>
-                <div className="addr" style={{ marginTop: 4 }}>{it.addr.slice(0, 10)}…{it.addr.slice(-6)}</div>
               </div>
               <span className="badge skip">Pending</span>
             </div>
