@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import TinderCard from 'react-tinder-card';
 import { useAccount, useChainId, useSwitchChain, useWriteContract } from 'wagmi';
 import { parseEther } from 'viem';
@@ -20,6 +20,7 @@ export default function SwipeDeck({ amount }: { amount: string }) {
   const [active, setActive] = useState<number>(0); // index of current card
   const [flipped, setFlipped] = useState<boolean>(false);
   const [insightsCache, setInsightsCache] = useState<Record<string, { last5: string[]; injuries: string[]; home?: string | null; away?: string | null }>>({});
+  const cardRef = useRef<any>(null);
   const { address } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
@@ -186,6 +187,7 @@ export default function SwipeDeck({ amount }: { amount: string }) {
       )}
       {current && (
         <TinderCard
+          ref={cardRef as any}
           className="swipe"
           onSwipe={(d) => onSwipe(d, current.card)}
           preventSwipe={[]}
@@ -207,37 +209,59 @@ export default function SwipeDeck({ amount }: { amount: string }) {
                 <h3 className="question">{current.card.question}</h3>
                 <div className="spacer" />
                 <div className="choiceRow">
-                  <span className="badge lose">← Lose</span>
+                  <button
+                    className="badge lose"
+                    onClick={(e) => { e.stopPropagation(); (cardRef as any)?.current?.swipe('left'); }}
+                  >
+                    ← Lose
+                  </button>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span className="badge skip">↑ Skip</span>
-                    <span className="badge skip">↓ Previous</span>
+                    <button
+                      className="badge skip"
+                      onClick={(e) => { e.stopPropagation(); (cardRef as any)?.current?.swipe('up'); }}
+                    >
+                      ↑ Skip
+                    </button>
+                    <button
+                      className="badge skip"
+                      onClick={(e) => { e.stopPropagation(); (cardRef as any)?.current?.swipe('down'); }}
+                    >
+                      ↓ Previous
+                    </button>
                   </div>
-                  <span className="badge win">Win →</span>
+                  <button
+                    className="badge win"
+                    onClick={(e) => { e.stopPropagation(); (cardRef as any)?.current?.swipe('right'); }}
+                  >
+                    Win →
+                  </button>
                 </div>
               </div>
               {/* Back face */}
               <div className="cardFace back">
-                <h4 style={{ margin: '4px 0 8px 0' }}>Insights</h4>
+                <div className="insightsHeader">
+                  <h4 className="insightsTitle">Insights</h4>
+                </div>
                 <div className="insightsGrid">
-                  <div>
+                  <div className="insightBox">
                     <div className="miniTitle">Last 5</div>
-                    <ul className="miniList">
+                    <div className="tagRow">
                       {(insightsCache[(current.card.marketAddress ?? current.card.question)]?.last5 ?? []).length
                         ? (insightsCache[(current.card.marketAddress ?? current.card.question)]!.last5).slice(0, 5).map((s, i) => (
-                            <li key={i}>{s}</li>
+                            <span className="tag" key={i}>{s}</span>
                           ))
-                        : <li>No data</li>}
-                    </ul>
+                        : <span className="tag muted">No data</span>}
+                    </div>
                   </div>
-                  <div>
+                  <div className="insightBox">
                     <div className="miniTitle">Injuries</div>
-                    <ul className="miniList">
+                    <div className="tagRow">
                       {(insightsCache[(current.card.marketAddress ?? current.card.question)]?.injuries ?? []).length
                         ? (insightsCache[(current.card.marketAddress ?? current.card.question)]!.injuries).slice(0, 5).map((s, i) => (
-                            <li key={i}>{s}</li>
+                            <span className="tag danger" key={i}>{s}</span>
                           ))
-                        : <li>No data</li>}
-                    </ul>
+                        : <span className="tag muted">No data</span>}
+                    </div>
                   </div>
                 </div>
               </div>

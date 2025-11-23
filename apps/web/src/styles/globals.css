@@ -460,16 +460,37 @@ body {
   background: linear-gradient(180deg, #0b141b, #0a1118);
   padding: 12px;
 }
+.insightsHeader { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.insightsTitle { margin: 0; font-size: 16px; font-weight: 700; }
 .insightsGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+}
+.insightBox {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 10px;
 }
 .miniTitle {
   font-size: 12px;
   color: var(--muted);
   margin-bottom: 6px;
 }
+.tagRow { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.tag.muted { color: var(--muted); background: transparent; border-style: dashed; }
+.tag.danger { border-color: rgba(239,68,68,.45); background: rgba(239,68,68,.10); color: #fecaca; }
 .miniList {
   margin: 0;
   padding-left: 16px;
@@ -541,12 +562,14 @@ body {
   background: rgba(34,197,94,.10);
   border-color: rgba(34,197,94,.35);
   box-shadow: 0 0 0 1px rgba(34,197,94,.05) inset;
+  animation: pulseWin 1.7s ease-in-out infinite;
 }
 .badge.lose {
   color: var(--lose);
   background: rgba(239,68,68,.10);
   border-color: rgba(239,68,68,.35);
   box-shadow: 0 0 0 1px rgba(239,68,68,.05) inset;
+  animation: pulseLose 1.7s ease-in-out infinite;
 }
 .badge.skip {
   color: var(--muted);
@@ -576,6 +599,18 @@ body {
   font-size: 13px;
   padding: 10px 0;
   opacity: .85;
+}
+
+/* Win/Lose soft pulse animation */
+@keyframes pulseWin {
+  0% { transform: scale(1); box-shadow: 0 0 0 1px rgba(34,197,94,.10) inset, 0 0 0 rgba(34,197,94,0); }
+  50% { transform: scale(1.08); box-shadow: 0 0 0 2px rgba(34,197,94,.25) inset, 0 0 16px rgba(34,197,94,.16); }
+  100% { transform: scale(1); box-shadow: 0 0 0 1px rgba(34,197,94,.10) inset, 0 0 0 rgba(34,197,94,0); }
+}
+@keyframes pulseLose {
+  0% { transform: scale(1); box-shadow: 0 0 0 1px rgba(239,68,68,.10) inset, 0 0 0 rgba(239,68,68,0); }
+  50% { transform: scale(1.08); box-shadow: 0 0 0 2px rgba(239,68,68,.25) inset, 0 0 16px rgba(239,68,68,.16); }
+  100% { transform: scale(1); box-shadow: 0 0 0 1px rgba(239,68,68,.10) inset, 0 0 0 rgba(239,68,68,0); }
 }
 
 
