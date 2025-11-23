@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     amount: String(body.amount),
     is_setteled: body.is_setteled ?? false
   };
-  if (body.tx_hash) payload.tx_hash = body.tx_hash; // if column exists
+  // tx_hash omitted to avoid column mismatch on minimal schemas
 
   const r = await fetch(`${SUPABASE_URL}/rest/v1/positions`, {
     method: 'POST',

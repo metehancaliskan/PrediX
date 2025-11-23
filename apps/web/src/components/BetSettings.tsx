@@ -8,7 +8,7 @@ type Props = {
 export default function BetSettings({ amount, onChange }: Props) {
   return (
     <div className="panel">
-      <h3 className="panelTitle">Trading Settings</h3>
+      <h3 className="panelTitle">Prediction Settings</h3>
       <div className="field">
         <label className="label">Amount per Trade (CHZ)</label>
         <div className="row">
@@ -31,7 +31,6 @@ export default function BetSettings({ amount, onChange }: Props) {
           value={Number(amount) || 0}
           onChange={(e) => onChange(e.target.value)}
         />
-        <p className="help">Swipe right = Win, left = Lose. This amount will be used for each bet.</p>
       </div>
     </div>
   );

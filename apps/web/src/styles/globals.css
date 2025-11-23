@@ -23,7 +23,7 @@ body {
 }
 
 .container {
-  max-width: 1100px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 20px;
 }
@@ -68,9 +68,13 @@ body {
 /* Two-column layout: deck left, settings right */
 .layoutGrid {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 260px 1fr 320px;
   gap: 24px;
   align-items: start;
+}
+.leftPanel {
+  position: sticky;
+  top: 20px;
 }
 .sidePanel {
   position: sticky;
@@ -200,6 +204,50 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+/* Flip animation elements */
+.cardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .45s ease;
+}
+.cardInner.flipped { transform: rotateY(180deg); }
+.cardFace {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.cardFace.back {
+  transform: rotateY(180deg);
+  background: linear-gradient(180deg, #0b141b, #0a1118);
+  padding: 12px;
+}
+.insightsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.miniTitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.miniList {
+  margin: 0;
+  padding-left: 16px;
+  line-height: 1.5;
+  font-size: 13px;
+}
+.subtle {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
 }
 
 /* İnce iç ışıma */
