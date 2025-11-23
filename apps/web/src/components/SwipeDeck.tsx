@@ -21,6 +21,7 @@ export default function SwipeDeck({ amount }: { amount: string }) {
   const [flipped, setFlipped] = useState<boolean>(false);
   const [insightsCache, setInsightsCache] = useState<Record<string, { last5: string[]; injuries: string[]; home?: string | null; away?: string | null }>>({});
   const cardRef = useRef<any>(null);
+  const [instance, setInstance] = useState<number>(0);
   const { address } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
@@ -51,6 +52,11 @@ export default function SwipeDeck({ amount }: { amount: string }) {
   const current = useMemo(() => {
     if (items.length === 0) return null;
     const i = ((active % items.length) + items.length) % items.length;
+    return { card: items[i], index: i } as { card: MarketCard; index: number };
+  }, [items, active]);
+  const nextCard = useMemo(() => {
+    if (items.length <= 1) return null;
+    const i = ((active + 1) % items.length + items.length) % items.length;
     return { card: items[i], index: i } as { card: MarketCard; index: number };
   }, [items, active]);
 
@@ -126,12 +132,14 @@ export default function SwipeDeck({ amount }: { amount: string }) {
   const onSwipe = async (direction: string, card: MarketCard) => {
     if (!current || items.length === 0) return;
     if (direction === 'up') { // pass forward
-      setActive((i) => (i + 1) % items.length);
+      if (items.length > 1) setActive((i) => (i + 1) % items.length);
+      setInstance((n) => n + 1);
       return;
     }
     if (direction === 'down') {
       // previous card
-      setActive((i) => (i - 1 + items.length) % items.length);
+      if (items.length > 1) setActive((i) => (i - 1 + items.length) % items.length);
+      setInstance((n) => n + 1);
       return;
     }
     const pick = direction === 'right' ? 'WIN' : direction === 'left' ? 'LOSE' : null;
@@ -175,7 +183,8 @@ export default function SwipeDeck({ amount }: { amount: string }) {
       console.error('positions insert failed', e);
     }
     // Move to next card after a bet
-    setActive((i) => (i + 1) % items.length);
+    if (items.length > 1) setActive((i) => (i + 1) % items.length);
+    setInstance((n) => n + 1);
   };
 
   return (
@@ -185,13 +194,37 @@ export default function SwipeDeck({ amount }: { amount: string }) {
           {flash}
         </div>
       )}
+      {/* back preview card to keep stack valid */}
+      {nextCard && (
+        <TinderCard
+          className="swipe"
+          preventSwipe={['left', 'right', 'up', 'down']}
+          key={`back-${nextCard.card.id}-${nextCard.index}-${active}-${instance}`}
+        >
+          <article className="card" style={{ zIndex: 60, pointerEvents: 'none', transform: 'scale(0.98)', opacity: 0.9 }}>
+            <div className="cardFace front">
+              {nextCard.card.imageUrl ? (
+                <div className="imgWrap">
+                  <img src={nextCard.card.imageUrl} alt="prediction" />
+                </div>
+              ) : null}
+              <div className="cardHeader">
+                <span className="chip">Next</span>
+                <span className="time">{nextCard.card.endsAt ? `Ends: ${new Date(nextCard.card.endsAt * 1000).toLocaleString()}` : ''}</span>
+              </div>
+              <h3 className="question">{nextCard.card.question}</h3>
+            </div>
+          </article>
+        </TinderCard>
+      )}
       {current && (
         <TinderCard
           ref={cardRef as any}
           className="swipe"
           onSwipe={(d) => onSwipe(d, current.card)}
+          onCardLeftScreen={() => setInstance((n) => n + 1)}
           preventSwipe={[]}
-          key={`${current.card.id}-${current.index}-${active}`}
+          key={`${current.card.id}-${current.index}-${active}-${instance}`}
         >
           <article className="card" style={{ zIndex: 100 }} onClick={() => onCardClick(current.card.marketAddress)}>
             <div className={`cardInner ${flipped ? 'flipped' : ''}`}>

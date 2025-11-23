@@ -7,8 +7,7 @@ import BetSettings from './BetSettings';
 export default function LeftRail({ amount, onChange }: { amount: string; onChange: (v: string) => void }) {
   const { address } = useAccount();
   const { data: bal, isLoading } = useBalance({
-    address: address as `0x${string}` | undefined,
-    watch: true
+    address: address as `0x${string}` | undefined
   });
 
   return (

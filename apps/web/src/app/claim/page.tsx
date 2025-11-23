@@ -96,7 +96,7 @@ export default function ClaimPage() {
   // Load on-chain claimable amount per market
   useEffect(() => {
     if (!address || !publicClient) return;
-    if (claimable.length === 0) { setPayouts({}); return; }
+    if (claimable.length === 0) { setPayouts({}); setPayoutsWei({}); return; }
 
     (async () => {
       const next: Record<string, string> = {};
@@ -114,7 +114,7 @@ export default function ClaimPage() {
             publicClient.getBalance({ address: addr })
           ]);
 
-          if (!isSettled) continue;
+          if (!isSettled) { next[addr] = '0 CHZ'; nextWei[addr] = 0n; continue; }
           let payout: bigint = 0n;
           // Outcome enum: 0=Undecided, 1=Win, 2=Lose, 3=InvalidOutcome
           if (outcome === 1 && userWin > 0n && totalWin > 0n) {
@@ -124,12 +124,12 @@ export default function ClaimPage() {
           } else if (outcome === 3) {
             payout = userWin + userLose;
           }
-          if (payout > 0n) {
-            next[addr] = `${Number(formatEther(payout)).toLocaleString(undefined, { maximumFractionDigits: 6 })} CHZ`;
-            nextWei[addr] = payout;
-          }
+          next[addr] = `${Number(formatEther(payout)).toLocaleString(undefined, { maximumFractionDigits: 6 })} CHZ`;
+          nextWei[addr] = payout;
         } catch {
-          // ignore per-market errors
+          // mark as 0 to at least render something
+          next[addr] = '0 CHZ';
+          nextWei[addr] = 0n;
         }
       }
       setPayouts(next);
@@ -201,16 +201,16 @@ export default function ClaimPage() {
               ) : null}
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 600 }}>{it.description ?? it.addr}</div>
-                {payouts[it.addr] && (
-                  <div className="label" style={{ marginTop: 6, color: 'var(--gold)' }}>Claimable: {payouts[it.addr]}</div>
-                )}
+                <div className="label" style={{ marginTop: 6, color: 'var(--gold)' }}>
+                  Claimable: {payouts[it.addr] ?? 'Calculating...'}
+                </div>
               </div>
               <button
                 className="connect"
                 onClick={() => withdraw(it.addr)}
                 disabled={isPending}
               >
-                {isPending ? 'Withdrawing...' : 'Withdraw'}
+                {isPending ? 'Claiming...' : 'Claim'}
               </button>
             </div>
           ))}

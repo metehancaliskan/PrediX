@@ -11,8 +11,7 @@ type Props = {
 export default function LeftSection({ amount, onChange }: Props) {
   const { address } = useAccount();
   const { data: bal, isLoading } = useBalance({
-    address: address as `0x${string}` | undefined,
-    watch: true
+    address: address as `0x${string}` | undefined
   });
 
   return (

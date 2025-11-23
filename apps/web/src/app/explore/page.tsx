@@ -23,7 +23,7 @@ export default function ExplorePage() {
           <div className="leftNav-inner">
             <div className="leftNavHeader">
               <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Image src="/predix_logo.png" alt="PrediX" width={120} height={32} style={{ height: 32, width: 'auto' }} />
+                <Image src="/predix_logo.png" alt="PrediX" width={160} height={42} style={{ height: 42, width: 'auto' }} />
               </div>
               <button
                 className="toggleBtn"
