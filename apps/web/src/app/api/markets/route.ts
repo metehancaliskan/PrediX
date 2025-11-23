@@ -10,11 +10,11 @@ type MarketRow = {
 
 export async function GET(request: Request) {
   const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+  const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE;
 
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  if (!SUPABASE_URL || !SERVICE_KEY) {
     return NextResponse.json(
-      { error: 'Missing SUPABASE_URL or SUPABASE_ANON_KEY' },
+      { error: 'Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE' },
       { status: 500 }
     );
   }
@@ -29,8 +29,8 @@ export async function GET(request: Request) {
 
   const r = await fetch(url.toString(), {
     headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      apikey: SERVICE_KEY,
+      Authorization: `Bearer ${SERVICE_KEY}`,
       'Content-Type': 'application/json'
     },
     cache: 'no-store'

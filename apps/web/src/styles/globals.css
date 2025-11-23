@@ -65,6 +65,73 @@ body {
   height: calc(100vh - 120px);
 }
 
+/* Two-column layout: deck left, settings right */
+.layoutGrid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+.sidePanel {
+  position: sticky;
+  top: 20px;
+}
+.panel {
+  background: linear-gradient(180deg, #0d141b, #0a1016);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 16px;
+}
+.panelTitle {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  letter-spacing: .3px;
+  color: var(--muted);
+}
+.field { margin: 10px 0 6px 0; }
+.label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+.input {
+  width: 100%;
+  background: #0b1219;
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+.input:focus {
+  border-color: rgba(34,197,94,.45);
+  box-shadow: 0 0 0 4px rgba(34,197,94,.10);
+}
+.suffix {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 8px;
+  border: 1px dashed rgba(255,255,255,0.08);
+  border-radius: 8px;
+}
+.slider {
+  width: 100%;
+  margin-top: 10px;
+}
+.help {
+  margin: 8px 0 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  opacity: .9;
+}
+
 .deck {
   position: relative;
   width: 360px;
@@ -180,6 +247,12 @@ body {
   background: rgba(239,68,68,.10);
   border-color: rgba(239,68,68,.35);
   box-shadow: 0 0 0 1px rgba(239,68,68,.05) inset;
+}
+.badge.skip {
+  color: var(--muted);
+  background: rgba(255,255,255,.04);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.04) inset;
 }
 
 /* Eski ipucu metni görünümünü daha sade tut */

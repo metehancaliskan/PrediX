@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers } from 'hardhat';
 
 async function main() {
   const Factory = await ethers.getContractFactory('PredictionMarketFactory');
@@ -7,7 +7,7 @@ async function main() {
   const factoryAddr = await factory.getAddress();
   console.log('Factory deployed:', factoryAddr);
 
-  const description = 'BTC bugün +%1 üstünde kapanır mı?';
+  const description = 'Galatasaray vs Fenerbahce — Will Galatasaray win this matchup?';
   const tx = await factory.createMarket(description);
   const receipt = await tx.wait();
 

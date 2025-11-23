@@ -1,4 +1,5 @@
-const { ethers } = require('hardhat');
+import { ethers } from 'hardhat';
+
 
 
 async function main() {
