@@ -554,6 +554,20 @@ body {
   border-color: rgba(255,255,255,.12);
   box-shadow: 0 0 0 1px rgba(255,255,255,.04) inset;
 }
+/* Header nav buttons (Explore/Claim) */
+.navBtn {
+  font-size: 18px;
+  font-weight: 800;
+  padding: 12px 18px;
+  color: #ffffff; /* default white text */
+  background: transparent; /* keep previous badge style look */
+  border-color: transparent;
+  transition: color .18s ease, transform .12s ease;
+}
+.navBtn:hover {
+  color: #ef4444; /* red on hover */
+  transform: translateY(-1px);
+}
 
 /* Eski ipucu metni görünümünü daha sade tut */
 .hint {

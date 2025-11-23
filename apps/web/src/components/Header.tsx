@@ -34,10 +34,10 @@ export default function Header({
           alignItems: 'center'
         }}
       >
-        <Link href="/explore" className="badge" style={{ textDecoration: 'none', fontSize: 18, fontWeight: 800, padding: '12px 18px' }}>
+        <Link href="/explore" className="badge navBtn" style={{ textDecoration: 'none' }}>
           Explore
         </Link>
-        <Link href="/claim" className="badge" style={{ textDecoration: 'none', fontSize: 18, fontWeight: 800, padding: '12px 18px' }}>
+        <Link href="/claim" className="badge navBtn" style={{ textDecoration: 'none' }}>
           Claim
         </Link>
       </nav>

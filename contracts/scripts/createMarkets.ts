@@ -3,10 +3,9 @@ const { ethers } = require('hardhat');
 
 const FACTORY_ADDR =
   process.env.FACTORY_ADDR ||
-  '0x95Ef99dbFFC5398337f598Bcf68cF374f1CF69f6';
+  '0x8BAC4cd42110c7715DD2DaDe448381897B8E6D99';
 
 const DESCRIPTIONS = [
-  'Galatasaray vs Fenerbahce — Will Galatasaray win this matchup?',
   'Manchester City vs Paris Saint-Germain — Will Manchester City win this matchup?',
   'AC Milan vs Arsenal — Will AC Milan win this matchup?'
 ];

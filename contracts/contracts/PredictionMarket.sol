@@ -15,6 +15,11 @@ contract PredictionMarket {
     uint256 public totalWinBets;
     uint256 public totalLoseBets;
 
+    // Fee configuration: 0.1% of each bet goes to the fee recipient
+    address payable public constant FEE_RECIPIENT = payable(0x95597Bf973a9536cAb0584bFbDE9A829FDCd6911);
+    uint256 public constant FEE_NUMERATOR = 1;    
+    uint256 public constant FEE_DENOMINATOR = 1000;
+
     event BetPlaced(address indexed bettor, uint256 amount, bool indexed betOnWin);
     event MarketSettled(Outcome outcome);
     event WinningsWithdrawn(address indexed bettor, uint256 amount);
@@ -30,8 +35,15 @@ contract PredictionMarket {
         require(!isSettled, "Market already settled");
         require(msg.value > 0, "Must send ETH to bet");
 
-        winBets[msg.sender] += msg.value;
-        totalWinBets += msg.value;
+        uint256 fee = (msg.value * FEE_NUMERATOR) / FEE_DENOMINATOR;
+        uint256 stake = msg.value - fee;
+        require(stake > 0, "Stake too small");
+        if (fee > 0) {
+            FEE_RECIPIENT.transfer(fee);
+        }
+
+        winBets[msg.sender] += stake;
+        totalWinBets += stake;
 
         emit BetPlaced(msg.sender, msg.value, true);
     }
@@ -40,8 +52,15 @@ contract PredictionMarket {
         require(!isSettled, "Market already settled");
         require(msg.value > 0, "Must send ETH to bet");
 
-        loseBets[msg.sender] += msg.value;
-        totalLoseBets += msg.value;
+        uint256 fee = (msg.value * FEE_NUMERATOR) / FEE_DENOMINATOR;
+        uint256 stake = msg.value - fee;
+        require(stake > 0, "Stake too small");
+        if (fee > 0) {
+            FEE_RECIPIENT.transfer(fee);
+        }
+
+        loseBets[msg.sender] += stake;
+        totalLoseBets += stake;
 
         emit BetPlaced(msg.sender, msg.value, false);
     }

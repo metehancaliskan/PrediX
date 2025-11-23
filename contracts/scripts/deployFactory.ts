@@ -1,5 +1,6 @@
 import { ethers } from 'hardhat';
 
+
 async function main() {
   const Factory = await ethers.getContractFactory('PredictionMarketFactory');
   const factory = await Factory.deploy();
